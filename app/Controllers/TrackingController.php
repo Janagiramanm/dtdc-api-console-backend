@@ -34,6 +34,9 @@ class TrackingController extends ResourceController
     {
         $data = $this->request->getJSON();
         $tracking = $this->Tracking->getStatus($data);
+        // echo '<pre>';
+        // print_r($tracking);
+        // exit;
         if($tracking == 0){
             $res = [
                 'status' => 0,

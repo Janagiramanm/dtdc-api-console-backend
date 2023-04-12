@@ -26,15 +26,87 @@ class Tracking extends Model
                         'available_count' => $result['available_count'] - 1,
                     ];
                     $this->db->table('customers')->where('id', $customer_id)->update($data1);
-                    $response = $this->getConsginStatus($consg_number);
+                    $response = $this->getConsginStatusNew($consg_number);
                 }else{
                     $response = 0;
                 }
             }else{
-                $response = $this->getConsginStatus($consg_number);
+                $response = $this->getConsginStatusNew($consg_number);
             }
             return $response;
     }  
+
+    public function getConsginStatusNew($consg_number){
+        $db2 = \Config\Database::connect('second_db');
+        $consgNumArray = explode(',',$consg_number);
+       $res = [];
+      
+        if($consgNumArray){
+            foreach($consgNumArray as $key => $consgnumber){
+                    $consgNumber =trim($consgnumber).'%';
+                    $sql = "SELECT 'DMC' AS T, CONSG_NUMBER as 'CN', 'RTO' as DELIVERY_STATUS ,OFFICE_ID , DATE_FORMAT(TRANS_CREATED_DATE,'%H:%i %d %M %y') AS DATE_TIME,RTO_CONSG_NUMBER,null as NO_OF_PIECES FROM dtdc_f_dmc where RTO_CONSG_NUMBER is not null and CONSG_NUMBER LIKE ? LIMIT 1";
+                    $query = $db2->query($sql,[$consgNumber]);
+                    $dmc= $query->getResultArray();
+                    $manifest=false;
+                    $delivery=false;
+                    if($dmc){
+                        $dmc[0]['NO_OF_PIECES'] = $this->getNumberOfPieces($consgnumber,$db2);
+                        if($dmc[0]['NO_OF_PIECES'] > 1){
+                            $dmc[0]['child'] = $this->getChildConsignments($consgnumber,$db2);
+                         }
+                         $res[] = $dmc;
+                    
+                    }
+                    if(!$dmc){
+                        $sql = "SELECT 'Delivery' AS T, CONSG_NUMBER as 'CN',
+                                case
+                                when(DELIVERY_STATUS = 'D') then ('Delivered')
+                                when(DELIVERY_STATUS = 'O') then ('Out for Delivery')
+                                when(DELIVERY_STATUS = 'R') then ('Out for Delivery')
+                                ELSE 'Out for Delivery'
+                                end as DELIVERY_STATUS,OFFICE_ID, DATE_FORMAT(RECORD_UPDATED_TIME,'%H:%i %d %M %y')  AS DATE_TIME , null as RTO_CONSG_NUMBER,null as NO_OF_PIECES FROM DTDC_F_DELIVERY WHERE CONSG_NUMBER LIKE ? and CONSG_STATUS = 'A' LIMIT 1";
+                        $query = $db2->query($sql,[$consgNumber]);
+                        $delivery= $query->getResultArray();
+                        if($delivery){
+                            // echo '<pre>';
+                            // print_r($delivery);
+                            $delivery[0]['NO_OF_PIECES'] = $this->getNumberOfPieces($consgnumber,$db2);
+                            if($delivery[0]['NO_OF_PIECES'] > 1){
+                                $delivery[0]['child'] = $this->getChildConsignments($consgnumber,$db2);
+                             }
+                            $res[] = $delivery;
+                        }
+                        if(!$delivery){
+                            $sql= "SELECT 'Manifest' AS T, CONSG_NUMBER as 'CN' ,'In Transit' as DELIVERY_STATUS ,null as OFFICE_ID, DATE_FORMAT(CONCAT(MANIFEST_DATE,' ' ,MANIFEST_TIME),'%H:%i %d %M %y') AS DATE_TIME , null as RTO_CONSG_NUMBER,NO_OF_PIECES FROM DTDC_F_manifest WHERE CONSG_NUMBER LIKE ? AND MANIFEST_TYPE_DEFN != 'POD' LIMIT 1";
+                            $query = $db2->query($sql,[$consgNumber]);
+                            $manifest= $query->getResultArray();
+                            if($manifest){
+                                $manifest[0]['NO_OF_PIECES'] = $this->getNumberOfPieces($consgnumber,$db2);
+                                if($manifest[0]['NO_OF_PIECES'] > 1){
+                                    $manifest[0]['child'] = $this->getChildConsignments($consgnumber,$db2);
+                                 }
+                                $res[] = $manifest;
+                            }
+
+                            if(!$manifest){
+                                $sql = "SELECT 'Booking' AS T, CONSG_NUMBER as 'CN', 'Booked' as DELIVERY_STATUS , BRNCH_OFF_ID as OFFICE_ID,DATE_FORMAT(CONCAT(BOOKING_DATE,' ' ,BOOKING_TIME),'%H:%i %d %M %y') AS DATE_TIME, null as RTO_CONSG_NUMBER,NO_OF_PIECES FROM DTDC_F_BOOKING WHERE CONSG_NUMBER LIKE ? LIMIT 1";
+                                $query= $db2->query($sql,[$consgNumber]);
+                                $booking= $query->getResultArray();
+                                if($booking){
+                                    if($booking[0]['NO_OF_PIECES'] > 1){
+                                        $booking[0]['child'] = $this->getChildConsignments($consgnumber,$db2);
+                                     }
+                                    $res[] = $booking;
+                                }
+                            }
+                        }     
+                    }
+            }
+        }
+        return $res;
+       
+
+}
 
     public function getConsginStatus($consg_number){
             $db2 = \Config\Database::connect('second_db');
