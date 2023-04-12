@@ -13,25 +13,25 @@ class CreateCustomerApiThresholdTable extends Migration
                 'type' => 'INT',
                 'constraint' => 5,
                 'unsigned' => true,
-                'auto_increment' => true,
+                'auto_increment' => true
             ],
             'customer_id' => [
                 'type' => 'INT',
-                'constraint' => 10,
+                'constraint' => 10
                 
             ],
             'api_threshold_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
-                'constraint' => 10,
+                'constraint' => 10
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
             'updated_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
            
         ]);

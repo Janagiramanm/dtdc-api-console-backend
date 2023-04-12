@@ -9,7 +9,7 @@ class ApiThreshold extends Seeder
     public function run()
     {
         $data = [
-                    ['name' => 'Tracking No','active'=>],
+                    ['name' => 'Tracking No'],
                     ['name' => 'Reference No'],
                     ['name' => 'Last Status Date'],
                     ['name' => 'Last Status'],

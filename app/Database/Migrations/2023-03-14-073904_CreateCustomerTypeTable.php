@@ -14,23 +14,23 @@ class CreateCustomerTypeTable extends Migration
                 'type' => 'INT',
                 'constraint' => 5,
                 'unsigned' => true,
-                'auto_increment' => true,
+                'auto_increment' => true
             ],
             'customer_type' => [
                 'type' => 'VARCHAR',
-                'constraint' => '255',
+                'constraint' => '255'
             ],
             'description' => [
                 'type' => 'VARCHAR',
-                'constraint' => '255',
+                'constraint' => '255'
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
             'updated_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
            
         ]);

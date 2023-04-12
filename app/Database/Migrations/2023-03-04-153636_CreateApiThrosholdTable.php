@@ -13,23 +13,23 @@ class CreateApiThrosholdTable extends Migration
                 'type' => 'INT',
                 'constraint' => 5,
                 'unsigned' => true,
-                'auto_increment' => true,
+                'auto_increment' => true
             ],
             'name' => [
                 'type' => 'VARCHAR',
-                'constraint' => '255',
+                'constraint' => '205'
             ],
             'active' => [
                 'type' => 'Boolean',
-                'constraint' => '255',
+                
             ],
             'created_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
             'updated_at' => [
                 'type' => 'DATETIME',
-                'null' => true,
+                'null' => true
             ],
            
         ]);
